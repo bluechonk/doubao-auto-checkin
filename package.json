@@ -34,6 +34,14 @@
     "cdp",
     "automation"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bluechonk/doubao-auto-checkin.git"
+  },
+  "homepage": "https://github.com/bluechonk/doubao-auto-checkin#readme",
+  "bugs": {
+    "url": "https://github.com/bluechonk/doubao-auto-checkin/issues"
+  },
   "license": "MIT",
   "private": true
 }
