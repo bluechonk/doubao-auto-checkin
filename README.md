@@ -121,6 +121,7 @@ pwsh -File scripts/install-task.ps1 -Uninstall   # 注销
 - `docs/02-cdp-and-nodes.md` CDP 取证、节点结构、agent-browser 使用坑
 - `docs/03-checkin-flow.md` 触发链、回调、幂等
 - `docs/04-verification.md` 实机验证记录
+- `docs/05-playwright-vs-agent-browser.md` 为什么用原始 CDP：Playwright 触达不到 Electron webview 的实测记录
 
 ## 目录结构
 
