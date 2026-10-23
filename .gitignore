@@ -1,0 +1,15 @@
+# 依赖
+node_modules/
+
+# 运行产物与临时文件
+.tmp/
+logs/
+*.log
+
+# 编辑器
+.vscode/
+.idea/
+
+# 系统
+Thumbs.db
+desktop.ini

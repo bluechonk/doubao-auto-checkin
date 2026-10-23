@@ -1,0 +1,39 @@
+{
+  "name": "doubao-auto-checkin",
+  "version": "1.0.0",
+  "description": "豆包 PC 客户端每日签到自动化脚本（npm 零依赖，仅 Windows）",
+  "type": "module",
+  "bin": {
+    "doubao-checkin": "bin/doubao-checkin.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "os": [
+    "win32"
+  ],
+  "scripts": {
+    "checkin": "node bin/doubao-checkin.mjs",
+    "probe": "node bin/doubao-checkin.mjs --dry-run",
+    "doctor": "node bin/doubao-checkin.mjs --doctor",
+    "test": "node --test test/state.test.mjs"
+  },
+  "keywords": [
+    "doubao",
+    "豆包",
+    "checkin",
+    "签到",
+    "cdp",
+    "automation"
+  ],
+  "license": "MIT",
+  "private": true
+}

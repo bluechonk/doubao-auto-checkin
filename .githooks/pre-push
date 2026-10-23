@@ -1,0 +1,12 @@
+#!/bin/sh
+# 推送门禁：推送前跑单元测试，失败则拒绝推送。
+# 启用：git config core.hooksPath .githooks
+set -e
+
+echo "[pre-push] running npm test ..."
+if command -v npm >/dev/null 2>&1; then
+  npm test
+else
+  node --test test/state.test.mjs
+fi
+echo "[pre-push] tests passed"
