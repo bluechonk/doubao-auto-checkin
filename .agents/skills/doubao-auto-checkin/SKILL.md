@@ -65,8 +65,15 @@ agent-browser --cdp 9222 find text 立即签到 click
 ### 本机已知坑：agent-browser 调用会挂起
 
 `agent-browser` 的常驻进程会继承调用方 stdout 管道句柄，直接从脚本里调用会一直不返回。
-解决办法是把输出重定向到文件（`Start-Process -RedirectStandardOutput`），再读文件内容。
-`docs/02-cdp-and-nodes.md` 里有可直接复用的 PowerShell 包装。
+仓库自带包装脚本 `scripts/ab-wrap.ps1` 解决这个问题（内部把输出重定向到 `.tmp/ab.out`，
+并用 `npm root -g` 定位 CLI，不写死安装路径）：
+
+```powershell
+pwsh -File scripts/ab-wrap.ps1 --cdp 9222 tab list
+pwsh -File scripts/ab-wrap.ps1 --cdp 9222 snapshot --interactive --compact
+```
+
+原理与更多坑见 `docs/02-cdp-and-nodes.md`。
 
 ## 页面结构与选择器（实测）
 

@@ -32,6 +32,14 @@ const HELP = `豆包自动签到（doubao-auto-checkin）
   DOUBAO_EXE_PATH  手动指定豆包客户端可执行文件路径（跳过自动发现）
 `;
 
+/** 参数用法错误。单独一类，便于映射到退出码 2（与执行失败区分开）。 */
+class UsageError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'UsageError';
+  }
+}
+
 /** 解析命令行参数。 */
 function parseArgs(argv) {
   const options = {
@@ -44,11 +52,22 @@ function parseArgs(argv) {
     quiet: false,
     help: false,
   };
+
+  // 取选项值，缺值时报参数错误而不是静默变成 NaN
+  const takeValue = (flag, index) => {
+    const value = argv[index + 1];
+    if (value === undefined || value.startsWith('-')) {
+      throw new UsageError(`${flag} 缺少参数值`);
+    }
+    return value;
+  };
+
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     switch (arg) {
       case '--port':
-        options.port = Number(argv[++i]);
+        options.port = Number(takeValue('--port', i));
+        i++;
         break;
       case '--dry-run':
         options.dryRun = true;
@@ -63,7 +82,8 @@ function parseArgs(argv) {
         options.doctor = true;
         break;
       case '--timeout':
-        options.timeout = Number(argv[++i]);
+        options.timeout = Number(takeValue('--timeout', i));
+        i++;
         break;
       case '--quiet':
         options.quiet = true;
@@ -73,11 +93,14 @@ function parseArgs(argv) {
         options.help = true;
         break;
       default:
-        if (arg.startsWith('--')) throw new Error(`未知参数: ${arg}`);
+        if (arg.startsWith('--')) throw new UsageError(`未知参数: ${arg}`);
     }
   }
   if (!Number.isInteger(options.port) || options.port <= 0 || options.port > 65535) {
-    throw new Error('--port 需要 1-65535 的整数');
+    throw new UsageError('--port 需要 1-65535 的整数');
+  }
+  if (!Number.isInteger(options.timeout) || options.timeout <= 0) {
+    throw new UsageError('--timeout 需要正整数毫秒');
   }
   return options;
 }
@@ -175,6 +198,8 @@ main()
     process.exitCode = code;
   })
   .catch((err) => {
+    const usage = err?.name === 'UsageError';
     process.stderr.write(`[doubao-checkin] error: ${err?.message || err}\n`);
-    process.exitCode = 1;
+    if (usage) process.stderr.write('运行 node bin/doubao-checkin.mjs --help 查看用法\n');
+    process.exitCode = usage ? 2 : 1;
   });

@@ -99,15 +99,20 @@ agent-browser --cdp 9222 snapshot --interactive --compact
 坑一：tab 参数不接受数字，必须用 `t2` 这种 tab id。
 坑二：`-i` 会被 PowerShell 当成公共参数名解析，要写 `--interactive`。
 坑三：agent-browser 的常驻 daemon 会继承 stdout 管道，直接被调用时命令不返回。
-必须把输出重定向到文件，再读文件：
+必须把输出重定向到文件，再读文件。仓库已提供现成包装脚本：
 
 ```powershell
-param([Parameter(ValueFromRemainingArguments = $true)][string[]]$AbArgs)
-$cli = 'C:\Program Files\nodejs\node_modules\agent-browser\bin\agent-browser.js'
-$out = Join-Path $PSScriptRoot 'ab.out'
-$p = Start-Process -FilePath 'C:\Program Files\nodejs\node.exe' `
+pwsh -File scripts/ab-wrap.ps1 --cdp 9222 tab list
+pwsh -File scripts/ab-wrap.ps1 --cdp 9222 snapshot --interactive --compact
+```
+
+脚本内部通过 `npm root -g` 定位 CLI（不写死安装路径），并把输出落到 `.tmp/ab.out`。
+核心就是这一段：
+
+```powershell
+$p = Start-Process -FilePath (Get-Command node).Source `
   -ArgumentList (@("`"$cli`"") + $AbArgs) `
-  -RedirectStandardOutput $out -RedirectStandardError (Join-Path $PSScriptRoot 'ab.err') `
+  -RedirectStandardOutput $out -RedirectStandardError $err `
   -PassThru -NoNewWindow
 $p.WaitForExit(90000) | Out-Null
 Get-Content $out -Raw

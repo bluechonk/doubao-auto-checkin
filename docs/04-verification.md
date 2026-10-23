@@ -116,7 +116,37 @@ $ node --test test/state.test.mjs
 7 passed
 ```
 
-## 六、已知限制
+## 六、删除本地后重新克隆的回归（2026-10-23）
+
+做法：删掉本地目录，用 `gh repo clone bluechonk/doubao-auto-checkin` 重新克隆（51 个文件），
+再完全按仓库内 `.agents/skills/` 的说明跑一轮。
+
+通过项：
+
+| 检查 | 结果 |
+|---|---|
+| `npm test`（无 `node_modules`） | 14 passed / 0 failed（状态判定 7 + CLI 7） |
+| `--doctor` | 命中 `...\Application\app\Doubao.exe`（2.32.6），端口 9222 |
+| `--dry-run` / 实机执行 | 均识别「已签到」，exit 0 |
+| 签到页未打开 | 自动经账号菜单打开后给出结论 |
+| 冷启动（先杀客户端） | 自行带调试端口启动并完成判定 |
+| `--quiet` / `--json` | 输出正常，`status=already_checked_in` |
+| `scripts/install-task.ps1` | 克隆后 `logs/` 不存在也能自建并注册/注销成功 |
+| `scripts/ab-wrap.ps1` | 通过 `npm root -g` 定位 CLI，`tab list` 正常列出 webview 签到页 |
+| agent-browser 手工步骤 | `snapshot --selector` 显示已签到卡片「no interactive elements」；`find text 立即签到 click` 优雅报错 |
+
+发现并修复的问题：
+
+| # | 问题 | 修复 |
+|---|---|---|
+| 1 | 参数错误退出码是 **1**，与文档写的 **2** 不符（`--port abc`、`--nope`） | 新增 `UsageError`，最外层 catch 映射为退出码 2，并提示 `--help` |
+| 2 | `--timeout abc` **静默**变成 `NaN`，未签到路径会直接跳过等待轮询 | 校验为正整数，非法即参数错误 |
+| 3 | `--port` / `--timeout` 缺值时报错信息含糊 | `takeValue()` 明确提示「缺少参数值」 |
+| 4 | `.githooks/pre-push` 入库但克隆后不生效，README 未说明 | README 增加「克隆后请启用推送门禁」小节 |
+| 5 | 技能说「docs/02 里有可直接复用的 PowerShell 包装」，但仓库没有该脚本文件 | 新增 `scripts/ab-wrap.ps1`（用 `npm root -g` 定位，不写死路径），docs/02 与 SKILL.md 同步指向它 |
+| 6 | CLI 参数行为无回归测试 | 新增 `test/cli.test.mjs`（7 例，覆盖退出码 2 与 `--help`） |
+
+## 七、已知限制
 
 1. `checkin` 接口的响应体只在真实点击那一刻抓得到；当天已签到就无法再复现，
    因此脚本把响应体当旁证，主判据仍是 DOM。

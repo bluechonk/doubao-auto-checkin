@@ -24,7 +24,7 @@
     "checkin": "node bin/doubao-checkin.mjs",
     "probe": "node bin/doubao-checkin.mjs --dry-run",
     "doctor": "node bin/doubao-checkin.mjs --doctor",
-    "test": "node --test test/state.test.mjs"
+    "test": "node --test test/state.test.mjs test/cli.test.mjs"
   },
   "keywords": [
     "doubao",

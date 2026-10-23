@@ -135,8 +135,13 @@ doubao-auto-checkin/
 │  ├─ checkin.mjs               签到状态机
 │  ├─ report.mjs                结论渲染
 │  └─ index.mjs                 对外导出
-├─ test/state.test.mjs          状态判定单元测试
-├─ scripts/install-task.ps1     每日计划任务注册/注销
+├─ test/
+│  ├─ state.test.mjs            状态判定单元测试
+│  └─ cli.test.mjs              CLI 参数与退出码测试
+├─ scripts/
+│  ├─ install-task.ps1          每日计划任务注册/注销
+│  └─ ab-wrap.ps1               agent-browser 调用包装（规避管道挂起）
+├─ .githooks/pre-push           推送前跑测试的门禁
 ├─ .agents/skills/
 │  ├─ doubao-auto-checkin/SKILL.md   本项目技能说明（MIT）
 │  └─ agent-browser/                 第三方技能内容（Apache-2.0）
@@ -178,11 +183,22 @@ A：先 `--doctor` 看路径与端口，再 `--dry-run` 看能否定位按钮，
 ## 开发
 
 ```bash
-node --test test/state.test.mjs   # 单元测试
+npm test                          # 单元测试：状态判定 + CLI 退出码
 node bin/doubao-checkin.mjs --dry-run
 ```
 
 选择器与接口路径集中在 `src/checkin.mjs` 的 `ANCHORS` 常量里，客户端改版时只改这一处。
+
+### 克隆后请启用推送门禁
+
+`core.hooksPath` 是**本地** Git 配置，不会随克隆带过来，新克隆的仓库要手动启用一次：
+
+```bash
+git config core.hooksPath .githooks
+```
+
+启用后每次 `git push` 会先执行 `npm test`，失败则拒绝推送。
+需要临时跳过时用 `git push --no-verify`（不推荐）。
 
 ## 边界
 
